@@ -35,14 +35,17 @@
         <strong>AvatarFusion: Zero-shot Generation of Clothing-Decoupled 3D Avatars Using 2D Diffusion</strong>
       </h1>
       <p id="authors"><a href="">Shuo Huang<sup>1</sup></a>
-        <a href="https://z-x-yang.github.io/">Zongxin Yang<sup>2</sup></a> 
-        <a href="">Liangting Li<sup>1</sup></a> 
+        <a href="https://z-x-yang.github.io/">Zongxin Yang<sup>2</sup></a>
+        <a href="">Liangting Li<sup>1</sup></a>
         <a href="https://scholar.google.com/citations?hl=zh-CN&user=RMSuNFwAAAAJ">Yi Yang<sup>2</sup></a>
         <a href="https://hcsi.cs.tsinghua.edu.cn/jiajia">Jia Jia<sup>13*</sup></a>
         <br>
-        <span style="font-size:16px"><sup>1</sup>Department of Computer Science and Technology, Tsinghua University</span><br>
-        <span style="font-size:16px"><sup>2</sup>CCAI, College of Computer Science and Technology, Zhejiang University</span><br>
-        <span style="font-size:16px"><sup>3</sup>Beijing National Research Center for Information Science and Technology</span><br>
+        <span style="font-size:16px"><sup>1</sup>Department of Computer Science and Technology, Tsinghua
+          University</span><br>
+        <span style="font-size:16px"><sup>2</sup>CCAI, College of Computer Science and Technology, Zhejiang
+          University</span><br>
+        <span style="font-size:16px"><sup>3</sup>Beijing National Research Center for Information Science and
+          Technology</span><br>
         <span style="font-size:16px"><sup>*</sup>Corresponding author(s).</span>
       </p>
       <font size="+2">
@@ -94,6 +97,140 @@
         clothing-decoupled model, which takes two SAvMs representing skin and clothing, and merge the space to render
         avatars with clothes. The lower part shows (c) our diffusion-based optimization methods with PS-DS separating
         the clothing from skin semantically. For clarity, we omit the image encoder $\mathcal{E}$ in the figure.</p>
+    </div>
+    <div class="content" style="text-align: center;">
+      <h2>Comparison with Baselines</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td>
+              <p>Stable DreamFusion</p>
+            </td>
+            <td>
+              <p>Latent-NeRF</p>
+            </td>
+            <td>
+              <p>AvatarCLIP</p>
+            </td>
+            <td>
+              <p>AvatarFusion(Ours)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/Stable-DreamFusion/df_ep0837_0001_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/latent-nerf/12900_0001_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/JoeBiden_AvatarCLIP_face.gif" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/JoeBiden_face.gif" style="width: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/Stable-DreamFusion/df_ep0837_0002_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/latent-nerf/12900_0002_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/JoeBiden_AvatarCLIP_joint.gif" style="height: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/JoeBiden/JoeBiden_joint.gif" style="height: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/Joker/S-DreamFusion/df_ep0884_0003_rgb (1).png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Latent-NeRF/50300_0000_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Joker_AvatarCLIP_face.gif" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Joker_face.gif" style="width: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/Joker/S-DreamFusion/df_ep0918_0002_rgb (1).png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Latent-NeRF/50300_0003_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Joker_AvatarCLIP_joint.gif" style="height: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Joker/Joker_joint.gif" style="height: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/Messi/S-Dreamfusion/df_ep0875_0002_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Latent-NeRF/36400_0000_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Messi_AvatarCLIP_face.gif" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Messi_face.gif" style="width: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/Messi/S-Dreamfusion/df_ep0936_0005_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Latent-NeRF/36400_0003_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Messi_AvatarCLIP_joint.gif" style="height: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/Messi/Messi_joint.gif" style="height: 250px;">
+            </td>
+          </tr>
+          
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/latent-nerf/85800_0002_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/latent-nerf/85800_0005_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/NelsonMandela_AvatarCLIP_face.gif" style="height: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/NelsonMandela_face.gif" style="height: 250px;">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/latent-nerf/85800_0001_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/latent-nerf/85800_0004_rgb.png" style="width: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/NelsonMandela_AvatarCLIP_joint.gif" style="height: 250px;">
+            </td>
+            <td>
+              <img src="videos/baseline_demo/NelsonMandela/NelsonMandela_joint.gif" style="height: 250px;">
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="content">
       <h2>Missing Figures in the Supplementary Material Due to Space Limitation</h2>
