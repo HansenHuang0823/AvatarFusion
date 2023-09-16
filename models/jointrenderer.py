@@ -260,17 +260,71 @@ class JointRenderer:
         cloth_sdf_nn_output = cloth_sdf_network(pts_cano)
         cloth_sdf_residual = cloth_sdf_nn_output[:, :1]
 
+        # print((cloth_sdf_residual[is_cloth]).mean())
+
+        # left_hand = torch.Tensor([-0.3236, -0.0013,  0.5917]).cuda()
+        # right_hand = torch.Tensor([ 0.3454, -0.0121,  0.5790]).cuda()
+        # head_center = head_center = torch.Tensor([-0.0055,  0.6681,  0.3625]).cuda()
+        # dis_to_left_hand = torch.linalg.norm(pts - left_hand, ord = 2, dim=-1)
+        # dis_to_right_hand = torch.linalg.norm(pts - right_hand, ord = 2, dim=-1)
+        # dis_to_head = torch.linalg.norm(pts - head_center, ord = 2, dim=-1)
+        # cloth_sdf_residual[dis_to_left_hand < 0.18] = 1
+        # cloth_sdf_residual[dis_to_right_hand < 0.18] = 1
+        # cloth_sdf_residual[dis_to_head < 0.15] = 1
+
+        # left_arm = torch.Tensor([-0.3236, 0.1213,  0.2817]).cuda()
+        # right_arm = torch.Tensor([ 0.3454, 0.1221,  0.2890]).cuda()
+        # dis_to_left_arm = torch.linalg.norm(pts - left_arm, ord = 2, dim=-1)
+        # dis_to_right_arm = torch.linalg.norm(pts - right_arm, ord = 2, dim=-1)
+        # dis_to_head = torch.linalg.norm(pts - head_center, ord = 2, dim=-1)
+        # cloth_sdf_residual[dis_to_left_arm < 0.18] = 1
+        # cloth_sdf_residual[dis_to_right_arm < 0.18] = 1
+
+        # left_shoulder = torch.Tensor([-0.3536, 0.3613,  0.2517]).cuda()
+        # right_shoulder = torch.Tensor([ 0.3554, 0.3621,  0.2590]).cuda()
+        # dis_to_left_shoulder = torch.linalg.norm(pts - left_shoulder, ord = 2, dim=-1)
+        # dis_to_right_shoulder = torch.linalg.norm(pts - right_shoulder, ord = 2, dim=-1)
+        # cloth_sdf_residual[dis_to_left_shoulder < 0.2] = 1
+        # cloth_sdf_residual[dis_to_right_shoulder < 0.2] = 1
+
+        # left_leg = torch.Tensor([-0.1536, -0.6513,  0.2017]).cuda()
+        # right_leg = torch.Tensor([ 0.1554, -0.6421,  0.2590]).cuda()
+        # right_knee = head_center = torch.Tensor([ 0.1554, -0.4221,  0.3290]).cuda()
+        # dis_to_left_leg = torch.linalg.norm(pts - left_leg, ord = 2, dim=-1)
+        # dis_to_right_leg = torch.linalg.norm(pts - right_leg, ord = 2, dim=-1)
+        # dis_to_right_knee = torch.linalg.norm(pts - right_knee, ord = 2, dim=-1)
+        # cloth_sdf_residual[dis_to_left_leg < 0.25] = 1
+        # cloth_sdf_residual[dis_to_right_leg < 0.28] = 1
+        # cloth_sdf_residual[dis_to_right_knee < 0.16] = 1
+
         cloth_sdf = body_sdf + coe * cloth_sdf_residual
         
         if is_all:
             cloth_feature_vector = cloth_sdf_nn_output[:, 1:]
         else:
             cloth_feature_vector = torch.zeros_like(cloth_sdf_nn_output[:, 1:])
+        
+        fake_color = cloth_sdf_nn_output[:, 1:4][is_cloth]
+        fake_color = torch.sigmoid(fake_color)
 
         gradients_cano = sdf_smpl.cano_gradient(pts_cano)
         gradients_cano_body = gradients_cano + coe * sdf_network.gradient(pts_cano).squeeze()
         gradients_cano_cloth = gradients_cano_body + coe * cloth_sdf_network.gradient(pts_cano).squeeze()
 
+        #####
+        # gradients_cano_cloth[dis_to_left_hand < 0.18] = gradients_cano_body[dis_to_left_hand < 0.18]
+        # gradients_cano_cloth[dis_to_right_hand < 0.18] = gradients_cano_body[dis_to_right_hand < 0.18]
+        # gradients_cano_cloth[dis_to_head < 0.15] = gradients_cano_body[dis_to_head < 0.15]
+
+        # gradients_cano_cloth[dis_to_left_arm < 0.18] = gradients_cano_body[dis_to_left_arm < 0.18]
+        # gradients_cano_cloth[dis_to_right_arm < 0.18] = gradients_cano_body[dis_to_right_arm < 0.18]
+        
+        # gradients_cano_cloth[dis_to_left_arm < 0.2] = gradients_cano_body[dis_to_left_arm < 0.2]
+        # gradients_cano_cloth[dis_to_right_arm < 0.2] = gradients_cano_body[dis_to_right_arm < 0.2]
+
+        # gradients_cano_cloth[dis_to_left_leg < 0.25] = gradients_cano_body[dis_to_left_leg < 0.25]
+        # gradients_cano_cloth[dis_to_right_leg < 0.28] = gradients_cano_body[dis_to_right_leg < 0.28]
+        # gradients_cano_cloth[dis_to_right_knee < 0.16] = gradients_cano_body[dis_to_right_knee < 0.16]
 
         gradients_cano_body = gradients_cano_body / (torch.norm(gradients_cano_body, dim=-1, keepdim=True) + 1e-7)
         gradients_cano_cloth = gradients_cano_cloth / (torch.norm(gradients_cano_cloth, dim=-1, keepdim=True) + 1e-7)
@@ -279,7 +333,7 @@ class JointRenderer:
         gradients_body = torch.matmul(jacobian, gradients_cano_body.unsqueeze(-1)).squeeze()
         gradients_cloth = torch.matmul(jacobian, gradients_cano_cloth.unsqueeze(-1)).squeeze()
 
-        raw_color_all = torch.zeros((batch_size * n_samples, 3), device=pts_cano.device)
+        # raw_color_all = torch.zeros((batch_size * n_samples, 3), device=pts_cano.device)
 
         real_head_color = color_network(pts_cano, gradients_cano_body, dirs, feature_vector)
         real_body_color = body_color_network(pts_cano, gradients_cano_body, dirs, torch.zeros_like(feature_vector))
@@ -294,7 +348,7 @@ class JointRenderer:
         raw_color_body = real_head_color * ratio_of_head + real_body_color * (1 - ratio_of_head)
 
         raw_color_cloth = cloth_color_network(pts_cano_cloth, gradients_cano_cloth[is_cloth], dirs[is_cloth], cloth_feature_vector[is_cloth])
-        raw_color_all[is_body] = raw_color_body[is_body]
+        # raw_color_all[is_body] = raw_color_body[is_body]
 
         true_cos_body = (dirs * gradients_body).sum(-1, keepdim=True)
 
@@ -344,12 +398,18 @@ class JointRenderer:
         
         body_color_weight = alpha_body_ / (alpha_body_ + alpha_cloth_)
         cloth_color_weight = alpha_cloth_ / (alpha_body_ + alpha_cloth_)
-        raw_color_all[is_cloth] = body_color_weight * raw_color_body[is_cloth] + cloth_color_weight * raw_color_cloth
-        sampled_color = torch.zeros_like(raw_color_all)
+        
+        # raw_color_all[is_cloth] = body_color_weight * raw_color_body[is_cloth] + cloth_color_weight * raw_color_cloth
+        sampled_color = torch.zeros((batch_size * n_samples, 3), device=pts_cano.device)
+        fake_color_all = torch.zeros((batch_size * n_samples, 3), device=pts_cano.device)
+
         sampled_color[is_body] = raw_color_body[is_body]
+        fake_color_all[is_body] = raw_color_body[is_body]
         sampled_color[is_cloth] = body_color_weight * raw_color_body[is_cloth] + cloth_color_weight * raw_color_cloth
-        raw_color_all = raw_color_all.reshape(batch_size, n_samples, 3)
+        fake_color_all[is_cloth] = body_color_weight * raw_color_body[is_cloth] + cloth_color_weight * fake_color
+        # raw_color_all = raw_color_all.reshape(batch_size, n_samples, 3)
         sampled_color = sampled_color.reshape(batch_size, n_samples, 3)
+        fake_color_all = fake_color_all.reshape(batch_size, n_samples, 3)
 
         gradients = torch.zeros_like(gradients_cano, dtype=gradients_body.dtype)
         gradients[is_body] = gradients_body[is_body]
@@ -368,6 +428,9 @@ class JointRenderer:
             sampled_color = sampled_color * inside_sphere[:, :, None] +\
                             background_sampled_color[:, :n_samples] * (1.0 - inside_sphere)[:, :, None]
             sampled_color = torch.cat([sampled_color, background_sampled_color[:, n_samples:]], dim=1)
+            fake_color_all = fake_color_all * inside_sphere[:, :, None] +\
+                            background_sampled_color[:, :n_samples] * (1.0 - inside_sphere)[:, :, None]
+            fake_color_all = torch.cat([fake_color_all, background_sampled_color[:, n_samples:]], dim=1)
 
         weights = alpha * torch.cumprod(torch.cat([torch.ones([batch_size, 1]), 1. - alpha + 1e-7], -1), -1)[:, :-1]
 
@@ -388,9 +451,11 @@ class JointRenderer:
         body_weights_sum = body_weights_sum.clip(5e-2, 1-5e-2)
         ray_entropy = (-torch.log2(cloth_weights_sum) * cloth_weights_sum - torch.log2(body_weights_sum) * body_weights_sum) / cloth_weights_sum.shape[0]
         color = (sampled_color * weights[:, :, None]).sum(dim=1)
+        fake_color_all = (fake_color_all * weights[:, :, None]).sum(dim=1)
 
         if background_rgb is not None:    # Fixed background, usually black
             color = color + background_rgb * (1.0 - weights_sum)
+            fake_color_all = fake_color_all + background_rgb * (1.0 - weights_sum)
 
         # Eikonal loss
         gradient_error = (torch.linalg.norm(gradients_cano.reshape(batch_size, n_samples, 3), ord=2,
@@ -401,6 +466,7 @@ class JointRenderer:
             'weight_entropy': ray_entropy.sum(),
             'sdf_residual': cloth_sdf_residual[is_cloth],
             'color': color,
+            'fake_color': fake_color_all,
             'sdf': body_sdf,
             'dists': dists,
             'gradients': gradients.reshape(batch_size, n_samples, 3),
@@ -530,5 +596,42 @@ class JointRenderer:
             'weights': weights,
             'gradients': gradients,
             'gradient_error': ret_fine['gradient_error'],
-            'inside_sphere': ret_fine['inside_sphere']
+            'inside_sphere': ret_fine['inside_sphere'],
+            'fake_color': ret_fine['fake_color']
         }
+
+    def extract_geometry(self, data, bound_min, bound_max, resolution, threshold=0.0):
+        def func(pts):
+            self.sdf_smpl.A = data["A"]
+            self.sdf_smpl.vertices = data["vertices"]
+            smpl_sdf, pts_cano = self.sdf_smpl(pts, data["pose"])
+
+            sdf_nn_output = self.sdf_network(pts_cano)
+            sdf_residual = sdf_nn_output[:, :1]
+
+            body_sdf = smpl_sdf + 0.1 * sdf_residual
+            feature_vector = sdf_nn_output[:, 1:]
+
+            cloth_sdf_nn_output = self.cloth_sdf_network(pts_cano)
+            cloth_sdf_residual = cloth_sdf_nn_output[:, :1]
+
+            cloth_sdf = smpl_sdf + 0.1 * cloth_sdf_residual
+            cloth_feature_vector = cloth_sdf_nn_output[:, 1:]
+
+            # seperate cloth and body points to reduce cuda mem.
+            is_cloth = (body_sdf >=  (0.00001 if not is_refine else 0.002)).squeeze(1)
+            is_body = torch.logical_not(is_cloth)
+            pts_cano_cloth = pts_cano[is_cloth]
+            pts_cano_body = pts_cano[is_body]
+            batch_size_body = torch.sum(is_body.int()).data
+            batch_size_cloth = torch.sum(is_cloth.int()).data
+            # print("Body: {}; Cloth: {}.".format(batch_size_body, batch_size_cloth))
+            sdf = torch.zeros_like(body_sdf)
+            sdf[is_body] = body_sdf[is_body]
+            sdf[is_cloth] = cloth_sdf[is_cloth]
+            return sdf
+        return extract_geometry(bound_min,
+                                bound_max,
+                                resolution=resolution,
+                                threshold=threshold,
+                                query_func=func)

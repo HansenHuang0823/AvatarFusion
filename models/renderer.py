@@ -273,18 +273,38 @@ class NeuSRenderer:
         inside_sphere = (pts_norm < 1.0).float().detach()
         relax_inside_sphere = (pts_norm < 1.2).float().detach()
 
+        # Render with background
+        # if background_alpha is not None:
+        #     alpha = alpha * inside_sphere + background_alpha[:, :n_samples] * (1.0 - inside_sphere)
+        #     alpha = torch.cat([alpha, background_alpha[:, n_samples:]], dim=-1)
+        #     sampled_color = sampled_color * inside_sphere[:, :, None] +\
+        #                     background_sampled_color[:, :n_samples] * (1.0 - inside_sphere)[:, :, None]
+        #     sampled_color = torch.cat([sampled_color, background_sampled_color[:, n_samples:]], dim=1)
 
         weights = alpha * torch.cumprod(torch.cat([torch.ones([batch_size, 1]), 1. - alpha + 1e-7], -1), -1)[:, :-1]
+        # weights[(sdf > 0.001).reshape(batch_size, n_samples)] = 0
         weights_sum = weights.sum(dim=-1, keepdim=True)
         if is_face:
+            # head = torch.Tensor([-0.0055,  0.6461,  0.3425]).cuda()
+            # dis_to_head = torch.linalg.norm(pts - head, ord = 2, dim=-1)
             selected_extra_sampled_color = extra_sampled_color.clone()
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15] = sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15]
+            # selected_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15] = 0
+            # extra_sampled_color_detach = extra_sampled_color.detach()
             selected_sampled_color = extra_sampled_color.clone()
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15] = extra_sampled_color_detach[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15]
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15] = 0
         elif is_body:
-
+            # head = torch.Tensor([-0.0055,  0.6461,  0.3425]).cuda()
+            # dis_to_head = torch.linalg.norm(pts - head, ord = 2, dim=-1)
+            # sampled_color_detach = sampled_color.detach()
             selected_extra_sampled_color = sampled_color.clone()
-
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15] = extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) > 0.15].detach()
+            # selected_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15] = 0
+            # extra_sampled_color_detach = extra_sampled_color.detach()
             selected_sampled_color = extra_sampled_color.clone()
-            
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15] = extra_sampled_color_detach[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15]
+            # selected_extra_sampled_color[dis_to_head.reshape(extra_sampled_color.shape[0:2]) < 0.15] = 0
         else:
             # head = torch.Tensor([-0.0055,  0.6681,  0.3625]).cuda()
             head = torch.Tensor([-0.0055,  0.6681,  0.3625]).cuda()
@@ -435,3 +455,19 @@ class NeuSRenderer:
             'gradient_error': ret_fine['gradient_error'],
             'inside_sphere': ret_fine['inside_sphere']
         }
+
+    def extract_geometry(self, data, bound_min, bound_max, resolution, threshold=0.0):
+        def func(pts):
+            self.sdf_smpl.A = data["A"]
+            self.sdf_smpl.vertices = data["vertices"]
+            sdf, pts_cano = self.sdf_smpl(pts, data["pose"])
+            sdf_nn_output = self.sdf_network(pts_cano)
+            sdf_residual = sdf_nn_output[:, :1]
+            sdf += 0.1 * sdf_residual
+            return sdf
+        
+        return extract_geometry(bound_min,
+                                bound_max,
+                                resolution=resolution,
+                                threshold=threshold,
+                                query_func=func)

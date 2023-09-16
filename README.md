@@ -8,13 +8,20 @@ Zero-shot Generation of Clothing-Decoupled 3D Avatars Using 2D Diffusion**
 ## To-Do List:
 - [ ] open source inference code by Sept. 17th.
 - [ ] open source checkpoints of avatars in standing pose by Sept. 28th.
-- [ ] open source part of the training code.
+- [✔] open source the training code.
 - [ ] open source benchmark FC-50.
 
 ## Download Supporting Models:
 1. smpl_models/smpl/SMPL_NEUTRAL.pkl: <a href="https://smpl.is.tue.mpg.de/"> https://smpl.is.tue.mpg.de/ </a> (**Note**: please download version 1.0)
 2. new_data/gradients_grid_stand.npy, sdf_grid_stand.npy, vertices_stand.npy, bound.npz: <a href="https://drive.google.com/drive/folders/1V1GNMPvbkX6NLC9rcuYjARPtcLjE6-k9?usp=sharing">Google Drive </a>
 3. stand_pose.npy: <a href="https://drive.google.com/drive/folders/1V1GNMPvbkX6NLC9rcuYjARPtcLjE6-k9?usp=sharing">Google Drive </a>
+
+## Training
+
+We offer three PSDS schedules, with the default schedule being the most stable one. Since the level of understanding of Stable Diffusion varies among individual characters, if clothing decoupling cannot be achieved, you can switch the schedules by adding "--schedule 1 (or 2)" or modifying the text prompts in the configurations.
+
+    python avatarfusion.py --mode train_diffusion --conf confs/TomCruise_opensource.conf
+Low VRAM users can reduce resolution ("max_ray_num") in line 66, avatarfusion.py.
 
 ## Acknowledgement
 This repository is build upon an increasing list of amazing research works and open-source projects, thanks a lot to all the authors for sharing!
